@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDFMania — Every PDF Tool in One Place</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #4F46E5;
+    --primary-light: #EEF2FF;
+    --primary-dark: #3730A3;
+    --accent: #06B6D4;
+    --accent-light: #ECFEFF;
+    --text: #111827;
+    --text-secondary: #6B7280;
+    --text-muted: #9CA3AF;
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --border: #E5E7EB;
+    --border-light: #F3F4F6;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 20px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo-icon {
+    width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo-icon svg { width: 20px; height: 20px; fill: white; }
+  .nav-logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); }
+  .nav-logo-text span { color: var(--primary); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 14px; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--primary); }
+  .nav-actions { display: flex; align-items: center; gap: 12px; }
+  .btn { cursor: pointer; border: none; font-family: 'Inter', sans-serif; font-weight: 500; border-radius: var(--radius-sm); transition: all .2s; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); padding: 8px 16px; font-size: 14px; border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--border-light); color: var(--text); }
+  .btn-primary { background: var(--primary); color: white; padding: 9px 20px; font-size: 14px; box-shadow: 0 2px 8px rgba(79,70,229,0.3); }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .btn-google {
+    background: white; border: 1px solid var(--border); color: var(--text);
+    padding: 9px 18px; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif;
+    box-shadow: var(--shadow-sm);
+  }
+  .btn-google:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(160deg, #EEF2FF 0%, #ECFEFF 50%, #F0FDF4 100%);
+    padding: 80px 2rem 60px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 13px; font-weight: 500; color: var(--primary);
+    margin-bottom: 24px; box-shadow: var(--shadow-sm);
+  }
+  .hero-badge::before { content: '✦'; font-size: 10px; }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 700; line-height: 1.1;
+    color: var(--text); margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+  .hero h1 span { color: var(--primary); }
+  .hero p { font-size: 18px; color: var(--text-secondary); max-width: 540px; margin: 0 auto 36px; line-height: 1.7; }
+  .hero-cta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .hero-stats { display: flex; justify-content: center; gap: 48px; margin-top: 56px; padding-top: 40px; border-top: 1px solid rgba(0,0,0,0.06); }
+  .hero-stat { text-align: center; }
+  .hero-stat strong { display: block; font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); }
+  .hero-stat span { font-size: 13px; color: var(--text-secondary); }
+
+  /* TOOL GRID */
+  .section { padding: 72px 2rem; max-width: 1280px; margin: 0 auto; }
+  .section-header { text-align: center; margin-bottom: 48px; }
+  .section-eyebrow { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 12px; }
+  .section-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 3vw, 40px); font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .section-header p { font-size: 16px; color: var(--text-secondary); max-width: 480px; margin: 0 auto; }
+
+  .tools-category { margin-bottom: 56px; }
+  .category-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .category-label::before { content: ''; display: block; width: 3px; height: 14px; background: var(--primary); border-radius: 2px; }
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .tool-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px 20px;
+    cursor: pointer; text-decoration: none; color: inherit;
+    transition: all .25s; display: block; position: relative; overflow: hidden;
+  }
+  .tool-card::after {
+    content: '';
+    position: absolute; inset: 0; opacity: 0;
+    background: linear-gradient(135deg, rgba(79,70,229,0.04), rgba(6,182,212,0.04));
+    transition: opacity .25s;
+  }
+  .tool-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: rgba(79,70,229,0.2); }
+  .tool-card:hover::after { opacity: 1; }
+  .tool-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; font-size: 22px;
+  }
+  .tool-card h3 { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .tool-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .tool-badge {
+    position: absolute; top: 12px; right: 12px;
+    font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 100px;
+  }
+  .badge-popular { background: #FEF3C7; color: #92400E; }
+  .badge-new { background: #D1FAE5; color: #065F46; }
+
+  /* UPLOAD MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius-lg);
+    width: 100%; max-width: 580px;
+    box-shadow: var(--shadow-lg); overflow: hidden;
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header {
+    padding: 28px 28px 0;
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .modal-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; }
+  .modal-header p { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+  .modal-close {
+    width: 32px; height: 32px; border: 1px solid var(--border); background: transparent;
+    border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all .2s;
+  }
+  .modal-close:hover { background: var(--border-light); color: var(--text); }
+  .modal-body { padding: 24px 28px 28px; }
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    background: var(--bg);
+  }
+  .dropzone:hover, .dropzone.drag-over { border-color: var(--primary); background: var(--primary-light); }
+  .dropzone-icon { font-size: 40px; margin-bottom: 12px; }
+  .dropzone h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .dropzone p { font-size: 13px; color: var(--text-secondary); }
+  .dropzone-btn {
+    display: inline-block; margin-top: 16px;
+    background: var(--primary); color: white; padding: 10px 24px;
+    border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all .2s;
+  }
+  .dropzone-btn:hover { background: var(--primary-dark); }
+  .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .file-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--surface);
+  }
+  .file-item-icon { font-size: 20px; }
+  .file-item-name { flex: 1; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-item-size { font-size: 12px; color: var(--text-muted); }
+  .file-item-remove { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted); padding: 4px; }
+  .file-item-remove:hover { color: var(--danger); }
+  .modal-footer { padding: 0 28px 28px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .btn-convert {
+    background: var(--primary); color: white; padding: 12px 32px;
+    font-size: 15px; font-weight: 600; border-radius: var(--radius-sm);
+    cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+    box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+    transition: all .2s; flex: 1;
+  }
+  .btn-convert:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .btn-convert:disabled { background: var(--text-muted); box-shadow: none; cursor: not-allowed; transform: none; }
+  .progress-bar-wrap { height: 4px; background: var(--border); border-radius: 2px; margin-top: 12px; display: none; }
+  .progress-bar { height: 100%; background: var(--primary); border-radius: 2px; width: 0%; transition: width .3s; }
+  .progress-bar-wrap.active { display: block; }
+  .result-area { display: none; text-align: center; padding: 16px; }
+  .result-area.active { display: block; }
+  .result-check { font-size: 48px; margin-bottom: 8px; }
+  .result-area h3 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .result-area p { font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; }
+  .btn-download {
+    background: var(--success); color: white; padding: 11px 28px;
+    font-size: 14px; font-weight: 600; border-radius: var(--radius-sm);
+    cursor: pointer; border: none; font-family: 'Inter', sans-serif;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.25); transition: all .2s;
+  }
+  .btn-download:hover { background: #059669; transform: translateY(-1px); }
+
+  /* AUTH MODAL */
+  .auth-modal { max-width: 440px; }
+  .auth-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .auth-tab {
+    flex: 1; padding: 12px; text-align: center; cursor: pointer;
+    font-size: 14px; font-weight: 500; color: var(--text-secondary);
+    border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s;
+    background: none; border-left: none; border-right: none; border-top: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .auth-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .auth-divider span { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-secondary); }
+  .form-group input {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px; font-family: 'Inter', sans-serif;
+    color: var(--text); background: var(--surface); transition: border-color .2s;
+    outline: none;
+  }
+  .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+  .btn-google-full {
+    width: 100%; background: white; border: 1px solid var(--border); color: var(--text);
+    padding: 11px 18px; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    border-radius: var(--radius-sm); cursor: pointer; transition: all .2s;
+    font-family: 'Inter', sans-serif; box-shadow: var(--shadow-sm);
+  }
+  .btn-google-full:hover { box-shadow: var(--shadow); background: var(--bg); }
+  .google-icon { width: 18px; height: 18px; }
+  .btn-submit { width: 100%; margin-top: 4px; }
+
+  /* USER MENU */
+  .user-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 100px; cursor: pointer;
+    font-size: 13px; font-weight: 500; color: var(--text);
+    font-family: 'Inter', sans-serif; transition: all .2s;
+  }
+  .user-btn:hover { box-shadow: var(--shadow-sm); }
+  .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: white; }
+
+  /* FEATURES */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+  .feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; }
+  .feature-icon { font-size: 28px; margin-bottom: 16px; }
+  .feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+  /* FOOTER */
+  footer { background: var(--text); color: #9CA3AF; padding: 48px 2rem 32px; }
+  .footer-grid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 48px; max-width: 1280px; margin: 0 auto; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .footer-brand { }
+  .footer-brand .nav-logo-text { color: white; }
+  .footer-brand p { font-size: 14px; margin-top: 12px; line-height: 1.6; }
+  .footer-col h4 { font-size: 13px; font-weight: 600; color: white; margin-bottom: 16px; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 10px; }
+  .footer-col ul li a { font-size: 13px; color: #9CA3AF; text-decoration: none; transition: color .2s; }
+  .footer-col ul li a:hover { color: white; }
+  .footer-bottom { max-width: 1280px; margin: 28px auto 0; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .footer-bottom a { color: #9CA3AF; text-decoration: none; margin-left: 24px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .hero { padding: 52px 1rem 40px; }
+    .hero-stats { gap: 24px; flex-wrap: wrap; }
+    .section { padding: 48px 1rem; }
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  }
+
+  /* NOTIFICATION */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 300;
+    background: var(--text); color: white; padding: 14px 20px;
+    border-radius: var(--radius-sm); font-size: 14px;
+    box-shadow: var(--shadow-lg); display: none; align-items: center; gap: 10px;
+    max-width: 340px;
+  }
+  .toast.show { display: flex; animation: slideUp .3s ease; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M7 3H17C18.1 3 19 3.9 19 5V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V5C5 3.9 5.9 3 7 3ZM9 7V9H15V7H9ZM9 11V13H15V11H9ZM9 15V17H13V15H9Z"/></svg>
+    </div>
+    <span class="nav-logo-text">PDF<span>Mania</span></span>
+  </a>
+
+  <div class="nav-links">
+    <a href="#tools">All Tools</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+
+  <div class="nav-actions" id="navActions">
+    <button class="btn btn-ghost" onclick="openAuth('login')">Log in</button>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
+    <button class="btn btn-primary" onclick="openAuth('signup')">Sign up free</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">18 powerful PDF tools</div>
+  <h1>Every PDF tool<br><span>you'll ever need</span></h1>
+  <p>Convert, compress, merge, split, sign, and edit PDFs. No installation needed — works directly in your browser.</p>
+  <div class="hero-cta">
+    <button class="btn btn-primary" style="font-size:16px; padding:13px 32px;" onclick="document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Explore all tools →</button>
+    <button class="btn-google" onclick="signInWithGoogle()" style="padding:12px 22px; font-size:15px;">
+      <svg class="google-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><strong>10M+</strong><span>Files processed</span></div>
+    <div class="hero-stat"><strong>500K+</strong><span>Users worldwide</span></div>
+    <div class="hero-stat"><strong>18</strong><span>PDF tools</span></div>
+    <div class="hero-stat"><strong>100%</strong><span>Browser-based</span></div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<div class="section" id="tools">
+  <div class="section-header">
+    <div class="section-eyebrow">All Tools</div>
+    <h2>Everything for your PDFs</h2>
+    <p>Click any tool below to get started. No account required for basic use.</p>
+  </div>
+
+  <!-- Convert to PDF -->
+  <div class="tools-category">
+    <div class="category-label">Convert to PDF</div>
+    <div class="tools-grid">
+      <a class="tool-card" onclick="openTool('Word to PDF', '📝', '.docx, .doc', 'Convert your Word document to PDF format while preserving all formatting.')">
+        <div class="tool-icon" style="background:#EEF2FF;">📝</div>
+        <h3>Word to PDF</h3>
+        <p>Convert .doc and .docx files to PDF</p>
+        <span class="tool-badge badge-popular">Popular</span>
+      </a>
+      <a class="tool-card" onclick="openTool('Excel to PDF', '📊', '.xlsx, .xls', 'Convert spreadsheets to PDF with all cells, charts and formatting intact.')">
+        <div class="tool-icon" style="background:#F0FDF4;">📊</div>
+        <h3>Excel to PDF</h3>
+        <p>Turn spreadsheets into clean PDFs</p>
+      </a>
+      <a class="tool-card" onclick="openTool('PowerPoint to PDF', '📽️', '.pptx, .ppt', 'Convert your presentations to PDF with all slides and graphics preserved.')">
+        <div class="tool-icon" style="background:#FFF7ED;">📽️</div>
+        <h3>PowerPoint to PDF</h3>
+        <p>Convert slides to shareable PDFs</p>
+      </a>
+      <a class="tool-card" onclick="openTool('JPG to PDF', '🖼️', '.jpg, .jpeg, .png, .gif, .bmp, .webp', 'Convert one or multiple images into a single PDF document.')">
+        <div class="tool-icon" style="background:#FDF4FF;">🖼️</div>
+        <h3>JPG to PDF</h3>
+        <p>Turn images into a PDF document</p>
+        <span class="tool-badge badge-new">New</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Convert from PDF -->
+  <div class="tools-category">
+    <div class="category-label">Convert from PDF</div>
+    <div class="tools-grid">
+      <a class="tool-card" onclick="openTool('PDF to Word', '📄', '.pdf', 'Convert PDF back to an editable Word document while keeping formatting.')">
+        <div class="tool-icon" style="background:#EEF2FF;">📄</div>
+        <h3>PDF to Word</h3>
+        <p>Make PDFs fully editable in Word</p>
+        <span class="tool-badge badge-popular">Popular</span>
+      </a>
+      <a class="tool-card" onclick="openTool('PDF to Excel', '📋', '.pdf', 'Extract tables and data from PDFs into editable Excel spreadsheets.')">
+        <div class="tool-icon" style="background:#F0FDF4;">📋</div>
+        <h3>PDF to Excel</h3>
+        <p>Extract tables and data to Excel</p>
+      </a>
+      <a class="tool-card" onclick="openTool('PDF to PowerPoint', '🎯', '.pdf', 'Turn PDF slides into editable PowerPoint presentations.')">
+        <div class="tool-icon" style="background:#FFF7ED;">🎯</div>
+        <h3>PDF to PowerPoint</h3>
+        <p>Convert PDFs to editable slides</p>
+      </a>
+      <a class="tool-card" onclick="openTool('PDF to JPG', '🖼️', '.pdf', 'Convert each PDF page into a high-quality JPG image.')">
+        <div class="tool-icon" style="background:#ECFEFF;">🖼️</div>
+        <h3>PDF to JPG</h3>
+        <p>Extract pages as JPG images</p>
+      </a>
+    </div>
+  </div>
+
+  <!-- Organize & Edit -->
+  <div class="tools-category">
+    <div class="category-label">Organize & Edit</div>
+    <div class="tools-grid">
+      <a class="tool-card" onclick="openTool('Merge PDF', '🔗', '.pdf', 'Combine multiple PDF files into a single document in your preferred order.')">
+        <div class="tool-icon" style="background:#EEF2FF;">🔗</div>
+        <h3>Merge PDF</h3>
+        <p>Combine multiple PDFs into one</p>
+        <span class="tool-badge badge-popular">Popular</span>
+      </a>
+      <a class="tool-card" onclick="openTool('Split PDF', '✂️', '.pdf', 'Separate a PDF into individual pages or extract specific page ranges.')">
+        <div class="tool-icon" style="background:#FFF7ED;">✂️</div>
+        <h3>Split PDF</h3>
+        <p>Separate pages or extract ranges</p>
+      </a>
+      <a class="tool-card" onclick="openTool('Organize PDF', '📁', '.pdf', 'Reorder, delete, or rotate pages visually with drag-and-drop.')">
+        <div class="tool-icon" style="background:#F0FDF4;">📁</div>
+        <h3>Organize PDF</h3>
+        <p>Reorder and delete pages visually</p>
+      </a>
+      <a class="tool-card" onclick="openTool('Rotate PDF', '🔄', '.pdf', 'Rotate one or all pages in your PDF permanently in any direction.')">
+        <div class="tool-icon" style="background:#ECFEFF;">🔄</div>
+        <h3>Rotate PDF</h3>
+        <p>Rotate pages to correct orientation</p>
+      </a>
+      <a class="tool-card" onclick="openTool('Edit PDF', '✏️', '.pdf', 'Add text, annotations, shapes, and images directly onto your PDF.')">
+        <div class="tool-icon" style="background:#FDF4FF;">✏️</div>
+        <h3>Edit PDF</h3>
+        <p>Add text, annotations and shapes</p>
+        <span class="tool-badge badge-new">New</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Optimize & Secure -->
+  <div class="tools-category">
+    <div class="category-label">Optimize & Secure</div>
+    <div class="tools-grid">
+      <a class="tool-card" onclick="openTool('Compress PDF', '⚡', '.pdf', 'Reduce PDF file size while keeping the best possible quality for sharing and storage.')">
+        <div class="tool-icon" style="background:#FFF7ED;">⚡</div>
+        <h3>Compress PDF</h3>
+        <p>Reduce file size without losing quality</p>
+        <span class="tool-badge badge-popular">Popular</span>
+      </a>
+      <a class="tool-card" onclick="openTool('Unlock PDF', '🔓', '.pdf', 'Remove password protection from your PDF so you can access it freely.')">
+        <div class="tool-icon" style="background:#FDF2F8;">🔓</div>
+        <h3>Unlock PDF</h3>
+        <p>Remove password protection from PDFs</p>
+      </a>
+      <a class="tool-card" onclick="openTool('Watermark PDF', '💧', '.pdf', 'Add a custom text or image watermark to your PDF pages easily.')">
+        <div class="tool-icon" style="background:#ECFEFF;">💧</div>
+        <h3>Watermark PDF</h3>
+        <p>Stamp custom text or image marks</p>
+      </a>
+      <a class="tool-card" onclick="openTool('Sign PDF', '🖊️', '.pdf', 'Electronically sign your PDF documents — draw, type, or upload your signature.')">
+        <div class="tool-icon" style="background:#F0FDF4;">🖊️</div>
+        <h3>Sign PDF</h3>
+        <p>Add electronic signatures instantly</p>
+        <span class="tool-badge badge-new">New</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Intelligence -->
+  <div class="tools-category">
+    <div class="category-label">Intelligence</div>
+    <div class="tools-grid">
+      <a class="tool-card" onclick="openTool('OCR — Text Recognition', '🔍', '.pdf, .jpg, .png', 'Extract text from scanned PDFs and images using optical character recognition.')">
+        <div class="tool-icon" style="background:#EEF2FF;">🔍</div>
+        <h3>OCR — Text Recognition</h3>
+        <p>Extract text from scanned documents</p>
+        <span class="tool-badge badge-popular">Popular</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section style="background: linear-gradient(180deg, white 0%, var(--bg) 100%); border-top: 1px solid var(--border);">
+  <div class="section" id="features">
+    <div class="section-header">
+      <div class="section-eyebrow">Why PDFMania</div>
+      <h2>Built for everyone, not just experts</h2>
+      <p>Simple enough for first-timers, powerful enough for professionals.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Your files stay private</h3>
+        <p>Files are processed in your browser when possible. Cloud processing uses encrypted transfers and files are deleted within 1 hour.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Lightning fast</h3>
+        <p>No waiting for uploads — most tools process your files in seconds. Works entirely in your browser for maximum speed.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Works everywhere</h3>
+        <p>Desktop, tablet, or phone — PDFMania is fully responsive and works on any modern browser without any app to install.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">☁️</div>
+        <h3>Save with Google</h3>
+        <p>Sign in with your Google account to save your file history, access files across devices, and use premium features.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>No account required</h3>
+        <p>Jump straight in without signing up. Create an account only when you want to unlock history, batch processing, or premium tools.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✨</div>
+        <h3>Always improving</h3>
+        <p>New tools and features added regularly based on user feedback. OCR, e-signatures, and batch mode are our latest additions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo" style="display:flex; align-items:center; gap:10px; margin-bottom:0;">
+        <div class="nav-logo-icon">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:white;"><path d="M7 3H17C18.1 3 19 3.9 19 5V19C19 20.1 18.1 21 17 21H7C5.9 21 5 20.1 5 19V5C5 3.9 5.9 3 7 3ZM9 7V9H15V7H9ZM9 11V13H15V11H9ZM9 15V17H13V15H9Z"/></svg>
+        </div>
+        <span class="nav-logo-text">PDF<span style="color:#818CF8;">Mania</span></span>
+      </div>
+      <p style="margin-top:12px;">The fastest way to work with PDFs. Free, browser-based, and always secure.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Convert to PDF</h4>
+      <ul>
+        <li><a href="#">Word to PDF</a></li>
+        <li><a href="#">Excel to PDF</a></li>
+        <li><a href="#">PPT to PDF</a></li>
+        <li><a href="#">JPG to PDF</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Convert from PDF</h4>
+      <ul>
+        <li><a href="#">PDF to Word</a></li>
+        <li><a href="#">PDF to Excel</a></li>
+        <li><a href="#">PDF to PPT</a></li>
+        <li><a href="#">PDF to JPG</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 PDFMania. All rights reserved.</span>
+    <div>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<!-- TOOL MODAL -->
+<div class="modal-overlay" id="toolModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalTitle">Tool Name</h2>
+        <p id="modalDesc" style="font-size:14px; color:var(--text-secondary); margin-top:4px;"></p>
+      </div>
+      <button class="modal-close" onclick="closeModal('toolModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="uploadArea">
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div class="dropzone-icon">📂</div>
+          <h3>Drop your file here</h3>
+          <p id="dropzoneAccept">or click to browse from your device</p>
+          <div class="dropzone-btn">Select file</div>
+        </div>
+        <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(event)" multiple>
+        <div class="file-list" id="fileList"></div>
+        <div class="progress-bar-wrap" id="progressWrap">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+      </div>
+      <div class="result-area" id="resultArea">
+        <div class="result-check">✅</div>
+        <h3>Conversion complete!</h3>
+        <p id="resultDesc">Your file is ready to download.</p>
+        <button class="btn-download" onclick="simulateDownload()">
+          ⬇ Download file
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn btn-ghost" onclick="closeModal('toolModal')">Cancel</button>
+      <button class="btn-convert" id="convertBtn" disabled onclick="startConversion()">Convert →</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal auth-modal">
+    <div class="modal-header">
+      <div>
+        <h2 id="authTitle">Welcome back</h2>
+        <p style="font-size:13px; color:var(--text-secondary); margin-top:2px;">Access all your converted files across devices</p>
+      </div>
+      <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchTab('login')">Log in</button>
+        <button class="auth-tab" id="signupTab" onclick="switchTab('signup')">Sign up</button>
+      </div>
+
+      <button class="btn-google-full" onclick="signInWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><span>or continue with email</span></div>
+
+      <div id="authForm">
+        <div class="form-group" id="nameGroup" style="display:none">
+          <label>Full name</label>
+          <input type="text" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" placeholder="••••••••">
+        </div>
+        <button class="btn btn-primary btn-submit" onclick="handleEmailAuth()">Log in →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+  let currentTool = '';
+  let selectedFiles = [];
+  let isLoggedIn = false;
+  let currentUser = null;
+
+  const tools = {
+    'Word to PDF': { accept: '.docx,.doc', output: 'document.pdf' },
+    'Excel to PDF': { accept: '.xlsx,.xls', output: 'spreadsheet.pdf' },
+    'PowerPoint to PDF': { accept: '.pptx,.ppt', output: 'presentation.pdf' },
+    'JPG to PDF': { accept: '.jpg,.jpeg,.png,.gif,.bmp,.webp', output: 'images.pdf' },
+    'PDF to Word': { accept: '.pdf', output: 'document.docx' },
+    'PDF to Excel': { accept: '.pdf', output: 'spreadsheet.xlsx' },
+    'PDF to PowerPoint': { accept: '.pdf', output: 'presentation.pptx' },
+    'PDF to JPG': { accept: '.pdf', output: 'pages.zip' },
+    'Merge PDF': { accept: '.pdf', output: 'merged.pdf', multiple: true },
+    'Split PDF': { accept: '.pdf', output: 'split_pages.zip' },
+    'Organize PDF': { accept: '.pdf', output: 'organized.pdf' },
+    'Rotate PDF': { accept: '.pdf', output: 'rotated.pdf' },
+    'Edit PDF': { accept: '.pdf', output: 'edited.pdf' },
+    'Compress PDF': { accept: '.pdf', output: 'compressed.pdf' },
+    'Unlock PDF': { accept: '.pdf', output: 'unlocked.pdf' },
+    'Watermark PDF': { accept: '.pdf', output: 'watermarked.pdf' },
+    'Sign PDF': { accept: '.pdf', output: 'signed.pdf' },
+    'OCR — Text Recognition': { accept: '.pdf,.jpg,.png', output: 'recognized.pdf' }
+  };
+
+  function openTool(name, icon, accept, desc) {
+    currentTool = name;
+    selectedFiles = [];
+    document.getElementById('modalTitle').textContent = name;
+    document.getElementById('modalDesc').textContent = desc;
+    document.getElementById('dropzoneAccept').textContent = 'Accepts: ' + accept + ' — or click to browse';
+    document.getElementById('fileInput').accept = (tools[name] || {}).accept || '*';
+    document.getElementById('fileInput').multiple = !!(tools[name] || {}).multiple;
+    document.getElementById('fileList').innerHTML = '';
+    document.getElementById('convertBtn').disabled = true;
+    document.getElementById('progressWrap').classList.remove('active');
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('uploadArea').style.display = 'block';
+    document.getElementById('resultArea').classList.remove('active');
+    document.getElementById('modalFooter').style.display = 'flex';
+    document.getElementById('toolModal').classList.add('active');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  function handleFileSelect(e) {
+    addFiles(Array.from(e.target.files));
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.add('drag-over');
+  }
+  function handleDragLeave() {
+    document.getElementById('dropzone').classList.remove('drag-over');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.remove('drag-over');
+    addFiles(Array.from(e.dataTransfer.files));
+  }
+
+  function addFiles(files) {
+    selectedFiles = [...selectedFiles, ...files];
+    renderFileList();
+    document.getElementById('convertBtn').disabled = selectedFiles.length === 0;
+  }
+
+  function renderFileList() {
+    const list = document.getElementById('fileList');
+    list.innerHTML = selectedFiles.map((f, i) => `
+      <div class="file-item">
+        <span class="file-item-icon">📄</span>
+        <span class="file-item-name">${f.name}</span>
+        <span class="file-item-size">${(f.size / 1024).toFixed(0)} KB</span>
+        <button class="file-item-remove" onclick="removeFile(${i})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function removeFile(i) {
+    selectedFiles.splice(i, 1);
+    renderFileList();
+    document.getElementById('convertBtn').disabled = selectedFiles.length === 0;
+  }
+
+  function startConversion() {
+    const btn = document.getElementById('convertBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+    const pw = document.getElementById('progressWrap');
+    const pb = document.getElementById('progressBar');
+    pw.classList.add('active');
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.random() * 18;
+      if (p >= 95) { p = 95; clearInterval(iv); }
+      pb.style.width = p + '%';
+    }, 180);
+    setTimeout(() => {
+      clearInterval(iv);
+      pb.style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('uploadArea').style.display = 'none';
+        document.getElementById('modalFooter').style.display = 'none';
+        const output = (tools[currentTool] || {}).output || 'output.pdf';
+        document.getElementById('resultDesc').textContent = `Your file "${output}" is ready to download.`;
+        document.getElementById('resultArea').classList.add('active');
+      }, 400);
+    }, 2200 + Math.random() * 800);
+  }
+
+  function simulateDownload() {
+    showToast('✅ Download started!');
+    closeModal('toolModal');
+  }
+
+  function openAuth(tab) {
+    switchTab(tab);
+    document.getElementById('authModal').classList.add('active');
+  }
+
+  function switchTab(tab) {
+    document.getElementById('loginTab').classList.toggle('active', tab === 'login');
+    document.getElementById('signupTab').classList.toggle('active', tab === 'signup');
+    document.getElementById('authTitle').textContent = tab === 'login' ? 'Welcome back' : 'Create your account';
+    document.getElementById('nameGroup').style.display = tab === 'signup' ? 'block' : 'none';
+    document.querySelector('#authForm .btn-submit').textContent = tab === 'login' ? 'Log in →' : 'Create account →';
+  }
+
+  function signInWithGoogle() {
+    closeModal('authModal');
+    currentUser = { name: 'Google User', initials: 'GU', email: 'user@gmail.com' };
+    setLoggedIn();
+    showToast('✅ Signed in with Google!');
+  }
+
+  function handleEmailAuth() {
+    closeModal('authModal');
+    currentUser = { name: 'User', initials: 'U', email: 'user@example.com' };
+    setLoggedIn();
+    showToast('✅ Signed in successfully!');
+  }
+
+  function setLoggedIn() {
+    isLoggedIn = true;
+    const actions = document.getElementById('navActions');
+    actions.innerHTML = `
+      <button class="user-btn" onclick="handleLogout()">
+        <div class="user-avatar">${currentUser.initials}</div>
+        ${currentUser.name}
+        <span style="color:var(--text-muted); font-size:12px;">▾</span>
+      </button>
+    `;
+  }
+
+  function handleLogout() {
+    isLoggedIn = false;
+    currentUser = null;
+    document.getElementById('navActions').innerHTML = `
+      <button class="btn btn-ghost" onclick="openAuth('login')">Log in</button>
+      <button class="btn-google" onclick="signInWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <button class="btn btn-primary" onclick="openAuth('signup')">Sign up free</button>
+    `;
+    showToast('👋 Logged out successfully');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('active');
+    });
+  });
+</script>
+</body>
+</html>
